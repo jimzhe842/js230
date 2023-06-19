@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #52be43;
+      box-sizing: border-box;
+    }
+
+    main {
+      margin: 10% auto;
+      width: 80%;
+    }
+    h1 {
+      color: white;
+    }
+    form {
+      background-color: white;
+      padding: 30px;
+      border-radius: 5px;
+      font-size: 1.2rem;
+    }
+    section {
+      background-color: white;
+      padding: 10px;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+    section p {
+      margin-left: 10px;
+      font-family: monospace;
+
+      white-space: pre-wrap;
+    }
+    section h1 {
+      color: black;
+    }
+    dt {
+      margin: 0 0 10px 0;
+    }
+    dd {
+      margin: 0 0 10px 0;
+    }
+    input {
+      padding: 5px;
+      width: 250px;
+      font-size: 1.2rem;
+      border: 1px solid lightgrey;
+      border-radius: 5px;
+    }
+    input[type='submit'] {
+      width: 100px;
+      color: white;
+      background-color: #52be43;
+      border: none;
+      padding: 10px 0;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    span {
+      margin-left: 25px;
+      color: maroon;
+    }
+    #formMessage {
+      color: maroon;
+      display: none;
+    }
+    .card {
+      width: 43px;
+    }
+  </style>
+  <title>Document</title>
+</head>
+<body>
+  <main>
+    <h1>Sign up Form</h1>
+    <form action="#" method="POST">
+      <p id="formMessage">Form cannot be submitted until errors are corrected.</p>
+      <dl>
+        <dt>
+          <label for="first">First Name</label>
+        </dt>
+        <dd>
+          <input type="text" id="first" name="first"><span></span>
+        </dd>
+        <dt>
+          <label for="last">Last Name</label>
+        </dt>
+        <dd>
+          <input type="text" id="last" name="last"><span></span>
+        </dd>
+        <dt>
+          <label for="email">Email</label>
+        </dt>
+        <dd>
+          <input type="text" id="email" name="email" placeholder="someone@example.com"><span></span>
+        </dd>
+        <dt>
+          <label for="password">Password</label>
+        </dt>
+        <dd>
+          <input type="password" id="password" name="password"><span></span>
+        </dd>
+        <dt>
+          <label for="number">Phone Number</label>
+        </dt>
+        <dd>
+          <input type="text" id="number" name="number" placeholder="111-222-3333"><span></span>
+        </dd>
+        <dt>
+          <label for="card">Credit Card</label>
+        </dt>
+        <dd>
+          <input type="text" class="card" name="card" maxlength="4" id="card1"> - <input type="text" class="card" name="card" maxlength="4" id="card2"> - <input type="text" class="card" name="card" maxlength="4" id="card3"> - <input type="text" class="card" name="card" maxlength="4" id="card4">
+          <span></span>
+        </dd>
+      </dl>
+      <input type="submit" value="Sign Up" class="submit">
+    </form>
+    <section id="formData">
+      <h1>Serialized Form</h1>
+
+    </section>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', event => {
+      let form = document.querySelector('form');
+      let inputs = document.querySelectorAll('input');
+      let cards = document.querySelectorAll('.card');
+      let formMessage = document.querySelector('#formMessage');
+      let first = document.querySelector('#first');
+      let last = document.querySelector('#last');
+      let formData = document.querySelector('#formData');
+      let invalidInputs = [];
+      
+      let dispatchTable = {
+        first: function(input) {
+          if (input.trim() === '') {
+            return "First Name is a required field.";
+          } else {
+            return '';
+          };
+        },
+        last: function(input) {
+          if (input.trim() === '') {
+            return "Last Name is a required field.";
+          } else {
+            return '';
+          };
+        },
+        email: function(input) {
+          if (input.trim() === '') {
+            return "Email is a required field.";
+          } else if (!input.trim().match(/.+@.+/)) {
+            return "Please Enter a valid Email.";
+          }
+          return '';
+        },
+        password: function(input) {
+          if (input.trim() === '') {
+            return "Password is a required field.";
+          } else if (input.length < 10) {
+            return "Password must be at least 10 characters long.";
+          } else {
+            return '';
+          }
+        },
+        number: function(input) {
+          if (input.trim() === '') {
+            return '';
+          } else if (!input.trim().match(/\d{3}-\d{3}-\d{4}/)) {
+            return "Please Enter a valid Phone Number.";
+          }
+          return '';
+        },
+        card: function(input) {
+          if (input.trim() === '') {
+            return '';
+          } else if (input.length < 4) {
+            return "Please Enter a valid Credit Card.";
+          }
+          return '';
+        }
+      }
+
+      function addToInvalidInputs(input) {
+        let id = input.id;
+        let index = invalidInputs.indexOf(id);
+        if (index === -1) {
+          invalidInputs.push(id);
+        }
+      }
+
+      function removeFromInvalidInputs(input) {
+        let id = input.id;
+        let index = invalidInputs.indexOf(id);
+        if (index > -1) {
+          invalidInputs.splice(index, 1);
+        }
+      }
+
+      function allInputsValid() {
+        return invalidInputs.length === 0;
+      }
+
+      function hideMessage() {
+        formMessage.style.display = 'none';
+      }
+
+      function showMessage() {
+        formMessage.style.display = 'block';
+      }
+
+      function blockNumeric(event) {
+        if (!event.key.match(/[A-Za-z]/)) {
+          event.preventDefault();
+        }
+      }
+
+      function blockNonNumeric(event) {
+        if (!event.key.match(/[0-9]/)) {
+          event.preventDefault();
+        }
+      }
+
+      function checkTab(event) {
+        if (this.value.length === 4) {
+          // let focus = new Event('focus');
+          // let blur = new Event('blur');
+          // this.dispatchEvent(blur);
+          // this.nextElementSibling.dispatchEvent(focus);
+          // console.log(event.shiftKey);
+          // console.log(Number(event.key));
+          if (!Number.isNaN(Number(event.key))) {
+            this.nextElementSibling.focus();
+          }
+        }
+      }
+
+
+      
+
+      let onInputFocus = function(event) {
+        this.parentNode.querySelector('span').textContent = '';
+        this.style.border = "1px solid #52be43";
+        this.style.outline = "none";
+        let name = this.name;
+      }
+
+      let onInputBlur = function(event) {
+        let validationMessage = dispatchTable[this.name](this.value);
+        if (validationMessage !== '') {
+          this.parentNode.querySelector('span').textContent = validationMessage;
+          this.style.border = "1px solid maroon";
+          addToInvalidInputs(this);
+          console.log(invalidInputs);
+        } else {
+          this.style.border = "1px solid lightgrey";
+          removeFromInvalidInputs(this);
+          if (allInputsValid()) {
+            hideMessage();
+          }
+        }
+      }
+      
+      Array.from(inputs).forEach(input => {
+        if (input.className !== 'submit') {
+          input.addEventListener('focus', onInputFocus);
+
+          input.addEventListener('blur', onInputBlur);
+        }
+      });
+
+      Array.from(cards).forEach((card, index) => {
+        card.addEventListener('keypress', blockNonNumeric);
+        if (index < 3) {
+          card.addEventListener('keyup', checkTab);
+        }
+      });
+
+      first.addEventListener('keypress', blockNumeric);
+      last.addEventListener('keypress', blockNumeric);
+
+      function serializeForm() {
+        let queryArr = [];
+        queryArr.push(`first_name=${first.value}`);
+        queryArr.push(`last_name=${last.value}`);
+        queryArr.push(`email=${document.querySelector('#email').value}`);
+        queryArr.push(`password=${document.querySelector('#password').value}`);
+        queryArr.push(`phone=${document.querySelector('#number').value.replace('-', '')}`);
+        let credit_card = '';
+        Array.from(cards).forEach(card => {
+          credit_card += card.value;
+        });
+        queryArr.push(`credit_card=${credit_card}`);
+        return queryArr.join('&');
+      }
+
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        let blur = new Event('blur');
+        Array.from(inputs).forEach(input => {
+          input.dispatchEvent(blur);
+        });
+        console.log(invalidInputs);
+        if (allInputsValid()) {
+          hideMessage();
+          let query = serializeForm();
+          let p = document.createElement('p');
+          p.textContent = query;
+          formData.appendChild(p);
+
+        } else {
+          showMessage();
+        }
+      });
+
+      
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+  <title>Document</title>
+  <style>
+    .particularBookings {
+      list-style-type: circle;
+      /* display: none; */
+    }
+
+    li {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bookings</h1>
+  <ul id="bookings">
+    <script type="text/x-handlebars" id="bookingDate">
+      {{#each dates}}
+        <li data-date={{this}}>
+          {{this}}
+            <ul class="particularBookings">
+              
+            </ul>
+        </li>
+      {{/each}}
+    </script>
+    
+    <script type="text/x-handlebars" id="booking">
+      <li>{{staff_name}} | {{student_email}} | {{time}}</li>
+    </script>
+  </ul>
+
+  <script>
+    
+    let bookings = document.querySelector('#bookings');
+    let bookingDate = document.querySelector('#bookingDate');
+    let dateTemplate = Handlebars.compile(bookingDate.innerHTML);
+    let booking = document.querySelector('#booking');
+    let bookingTemplate = Handlebars.compile(booking.innerHTML);
+    
+    bookings.addEventListener('click', event => {
+      event.preventDefault();
+      let li = event.target.closest('li[data-date]');
+      if (li) {
+        if (li.querySelector('.particularBookings').innerHTML.trim() !== '') {
+          return;
+        }
+        let date = li.getAttribute('data-date');
+        console.log(date);
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', `/api/bookings/${date}`);
+        xhr.responseType = 'json';
+        xhr.addEventListener('load', event => {
+          console.log(xhr.response);
+          let bookings = xhr.response;
+          bookings.forEach(booking => {
+            let staff_name = booking[0];
+            let student_email = booking[1];
+            let time = booking[2];
+            let info = {staff_name, student_email, time};
+            li.querySelector('.particularBookings').insertAdjacentHTML('beforeend', bookingTemplate(info));
+          });
+        });
+        xhr.send();
+      }
+    });
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/bookings');
+    xhr.responseType = 'json';
+    xhr.addEventListener('load', event => {
+      bookings.innerHTML = dateTemplate({dates: xhr.response});
+      // console.log(xhr.response);
+    });
+    xhr.send();
+  </script>
+</body>
+</html>

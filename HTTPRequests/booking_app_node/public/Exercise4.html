@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+  <title>Document</title>
+  <style>
+    form {
+      width: 100%;
+      box-sizing: border-box;
+      margin: 10px auto;
+      position: relative;
+    }
+    dl {
+      padding: 10px 0 10px 50px;
+      border: 3px double #ccc;
+    }
+    dt {
+      float: left;
+      clear: left;
+      margin-bottom: 10px;
+      color: #ff0050;
+      font-weight: bold;
+      text-align: right;
+      width: 100px;
+    }
+    dt::after {
+      content: ":";
+      padding-right: 10px;
+    }
+    dd {
+      margin-bottom: 10px;
+    }
+    input[type="submit"] {
+      padding: 1rem 2rem;
+      color: white;
+      background-color: #ee0050;
+      border: none;
+      border-radius: 0.5rem;
+    }
+    
+    button {
+      padding: 1rem 2rem;
+      color: white;
+      background-color: #00ccee;
+      border: none;
+      border-radius: 0.5rem;
+    }
+
+    input, select {
+      width: 200px;
+      padding: 1px;
+      box-sizing: border-box;
+    }
+    ul {
+      list-style: none;
+    }
+    li {
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    span {
+
+      position: absolute;
+      left: 15px;
+      top: -6px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <button id="add-btn">Add more schedules</button>
+  <form method="POST" action="/api/schedules">
+    <ul id="schedules">
+        
+    </ul>
+    <input type="submit">
+  </form>
+  <script type="text/x-handlebars" id="schedule-form">
+    <li data-block={{counter}}>
+      <span>Schedule {{counter}}</span>
+      <fieldset>
+        <dl>
+          <dt>
+
+            <label for="staffName">Staff Name</label>
+          </dt>
+          <dd>
+            <select name="staff_id" id="staffName">
+              {{#each staffNames}}
+                <option value={{this.id}}>{{this.name}}</option>
+              {{/each}}
+              <!-- <option value="1">Fae Kassulke V</option> -->
+              <!-- <option value="3">Gia Rice</option> -->
+              <!-- <option value="5">Lacey Kautzer I</option> -->
+            </select>
+          </dd>
+          <dt>
+            <label for="date">Date</label>
+          </dt>
+          <dd>
+            <input type="text" id="date" name="date" placeholder="mm-dd-yy">
+          </dd>
+          <dt>
+            <label for="time">Name</label>
+          </dt>
+          <dd>
+            <input type="text" id="time" name="time" placeholder="hh-mm">
+          </dd>
+        </dl>
+      </fieldset>
+    </li>
+  </script>
+
+  <script>
+    let addBtn = document.querySelector('#add-btn');
+    let schedules = document.querySelector('#schedules');
+    let form = document.querySelector('form');
+    let scheduleForm = document.querySelector('#schedule-form');
+    let formTemplate = Handlebars.compile(scheduleForm.innerHTML);
+    let counter = 0;
+    let staffMembers;
+
+    (function() {
+      let xhr = new XMLHttpRequest();
+      xhr.open('GET', '/api/staff_members');
+      xhr.addEventListener('load', event => {
+        let data = JSON.parse(xhr.response);
+        staffMembers = data;
+      });
+      xhr.send();
+    })();
+
+    addBtn.addEventListener('click', event => {
+      event.preventDefault();
+      console.log(schedules);
+      counter++;
+      schedules.insertAdjacentHTML('beforeend', formTemplate({counter, staffNames: staffMembers}));
+    });
+
+    // addBtn.dispatchEvent(new Event('click'));
+
+    
+    
+
+    function formToJson() {
+      let json = {
+        schedules: []
+      };
+      for (let i = 1; i <= counter; i++) {
+        let li = form.querySelector(`[data-block='${i}']`);
+        let staff_id = li.querySelector('#staffName').value;
+        let date = li.querySelector('#date').value;
+        let time = li.querySelector('#time').value;
+        let info = {staff_id, date, time};
+        json.schedules.push(info);
+      }
+      return JSON.stringify(json);
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      let xhr = new XMLHttpRequest();
+      xhr.open('POST', form.action);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.addEventListener('load', event => {
+        switch (xhr.status) {
+          case 201:
+            // let data = JSON.parse(xhr.response);
+            alert(`${xhr.responseText}`);
+            counter = 0;
+            form.reset();
+            schedules.innerHTML = '';
+            break;
+          case 400:
+            alert(xhr.responseText);
+        }
+      });
+      let json = formToJson();
+
+      console.log(json);
+
+      xhr.send(json);
+    });
+  </script>
+  
+</body>
+</html>
+{"schedules":[{"staff_id":"1","date":"12-12-12","time":"12-30"}]}
+{"schedules":[{"staff_id":"1","date":"12-12-12","time":"12-30"}]}
+Populate selection with an API Request

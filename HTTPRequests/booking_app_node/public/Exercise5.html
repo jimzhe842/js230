@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+  <title>Document</title>
+  <style>
+    #newStudent {
+      background-color: lightgrey;
+      padding: 10px;
+      display: none;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Schedules</h1>
+  <form action="api/bookings" method="POST" id="booking">
+    <dl>
+      <dt>
+        <label for="id">Please select one schedule</label>
+      </dt>
+      <dd>
+        <select name="id" id="schedule">
+        </select>
+      </dd>
+      <dt>
+        <label for="student_email">Email:</label>
+      </dt>
+      <dd>
+        <input type="text" name="student_email" id="email">
+      </dd>
+    </dl>
+    <input type="submit">
+  </form>
+  <form action="api/students" method="POST" id="newStudent">
+    <h1>Please provide new student details</h1>
+    <dl>
+      <dt>
+        <label for="email">Email:</label>
+      </dt>
+      <dd>
+        <input type="text" name="email" id="studentemail">
+      </dd>
+      <dt>
+        <label for="name">Name:</label>
+      </dt>
+      <dd>
+        <input type="text" name="name" id="name">
+      </dd>
+      <dt>
+        <label for="booking_sequence">Booking Sequence:</label>
+      </dt>
+      <dd>
+        <input type="text" name="booking_sequence" id="sequence">
+      </dd>
+    </dl>
+    <input type="submit">
+  </form>
+
+  <script>
+    $(function() {
+      let $bookingForm = $('#booking');
+      let $selection = $('#schedule');
+
+      let $newStudent = $('#newStudent');
+
+      $.ajax({
+        method: 'GET',
+        url: "/api/schedules",
+        dataType: 'json'
+      }).done(function(data) {
+        // console.log(data);
+        $.ajax({
+          method: 'GET',
+          url: "/api/staff_members",
+          dataType: 'json'
+        }).done(function(staffData) {
+
+          data = data.filter(schedule => !schedule.student_email);
+          data = data.map(schedule => {
+            schedule.staff_name = staffData[Number(schedule.staff_id) - 1].name
+            return schedule;
+          });
+          
+          console.log(staffData);
+          data.forEach(schedule => {
+            $selection.append(`<option value=${schedule.id}>${schedule.staff_name} | ${schedule.date} | ${schedule.time} </option>`);
+          });
+        });
+        
+      });
+
+      function formDataToJson(formData) {
+        let json = {};
+        for (const pair of formData) {
+          json[pair[0]] = pair[1];
+        }
+        return JSON.stringify(json);
+      }
+
+      $bookingForm.submit(function(e) {
+        e.preventDefault();
+        let selection = $('#schedule').val();
+        if (!selection) {
+          alert("Please wait!");
+          return;
+        }
+        let formData = new FormData($bookingForm[0]);
+        let json = formDataToJson(formData);
+        let action = $(this).attr('action');
+        console.log(json);
+        // $.ajax({
+        //   method: "POST",
+        //   url: action,
+        //   contentType: 'application/json'
+        // }).done(data => {
+        //   alert(data.responseText);
+        // });
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', action);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.addEventListener('load', event => {
+          switch(xhr.status) {
+            case 204:
+              alert('Booked');
+              window.location.href = '/Exercise5.html';
+              break;
+            case 404:
+              alert(xhr.responseText);
+              let bookingSequence = xhr.responseText.split(' ').slice(-1)[0];
+              console.log(bookingSequence);
+              $newStudent.css('display', 'block');
+              $('#studentemail').val($('#email').val());
+              $('#sequence').val(bookingSequence);
+          }
+        });
+        xhr.send(json);
+      });
+
+      $(newStudent).on('submit', function(e) {
+        e.preventDefault();
+        let formData = new FormData($(this)[0]);
+        let json = formDataToJson(formData);
+        let action = $(this).attr('action');
+        $.ajax({
+          method: 'POST',
+          url: action,
+          contentType: 'application/json',
+          data: json
+        }).done(response => {
+          alert(response);
+          $bookingForm.trigger('submit');
+          $(this).css('display', 'none');
+        }).error(response => {
+          alert(response.responseText);
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      background-color: #ffeedd;
+      font-size: 1.2rem;
+    }
+    main {
+      margin: 0 auto;
+      width: 60%;
+    }
+    label {
+      width: 60%;
+      display: inline-block;
+    }
+    .correct {
+      border: 2px solid green;
+    }
+    .incorrect {
+      border: 2px solid red;
+    }
+    .result {
+      min-height: 1.6rem;
+      box-sizing: border-box;
+    }
+    .submit {
+      background-color: rgb(100,255,100);
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+    .reset {
+      background-color: lightgrey;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+    .active {
+      background-color: rgb(100, 255, 100);
+    }
+    .inactive {
+      background-color: lightgrey;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Multiple Choice Quiz</h1>
+    <form action="#" method="POST">
+      <input type="submit" class="submit"> <button class="reset">Reset</button>
+    </form>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', event => {
+      let form = document.querySelector('form');
+      let resetBtn = document.querySelector('.reset');
+      let submitBtn = document.querySelector('input[type="submit"]');
+      
+      const questions = [
+        {
+          id: 1,
+          description: "Who is the author of <cite>The Hitchhiker's Guide to the Galaxy</cite>?",
+          options: ['Dan Simmons', 'Douglas Adams', 'Stephen Fry', 'Robert A. Heinlein'],
+        },
+        {
+          id: 2,
+          description: 'Which of the following numbers is the answer to Life, the \
+                        Universe and Everything?',
+          options: ['66', '13', '111', '42'],
+        },
+        {
+          id: 3,
+          description: 'What is Pan Galactic Gargle Blaster?',
+          options: ['A drink', 'A machine', 'A creature', 'None of the above'],
+        },
+        {
+          id: 4,
+          description: 'Which star system does Ford Prefect belong to?',
+          options: ['Aldebaran', 'Algol', 'Betelgeuse', 'Alpha Centauri'],
+        },
+      ];
+
+      const answerKey = { '1': 'Douglas Adams', '2': '42', '3': 'A drink', '4': 'Betelgeuse' };
+      
+      let app = {
+        addQuestion(question) {
+          let div = document.createElement('div');
+          let description = document.createElement('p');
+          description.innerHTML = `Q${question.id} ${question.description}`;
+          div.appendChild(description);
+          question.options.forEach(option => {
+            let label = document.createElement('label');
+            let input = document.createElement('input');
+            let text = document.createTextNode(option);
+            input.setAttribute('type', 'radio');
+            input.setAttribute('name', question.id);
+            label.appendChild(input);
+            label.appendChild(text);
+            div.appendChild(label);
+          });
+          let result = document.createElement('p');
+          result.className = "result";
+          div.appendChild(result);
+          div.className = "question";
+          div.id = question.id;
+          form.insertBefore(div, submitBtn);
+        },
+        
+        renderQuestions() {
+          questions.forEach(question => {
+            this.addQuestion(question);
+          });
+        },
+
+        getCheckedRadio(questionElement) {
+          let radios = questionElement.querySelectorAll('input[type="radio"]');
+          let checkedRadio;
+          for (let i = 0; i < radios.length; i++) {
+            let radio = radios[i];
+            if (radio.checked) {
+              return radio;
+            }
+          }
+        },
+
+        setCorrectAnswer(questionElement) {
+          let result = questionElement.querySelector('.result')
+          result.textContent = "Correct Answer";
+          result.classList.add('correct');
+        },
+
+        setIncorrectAnswer(questionElement, text) {
+          let result = questionElement.querySelector('.result');
+          result.textContent = text;
+          result.classList.add('incorrect');
+        },
+
+        hideResult(questionElement) {
+          let result = questionElement.querySelector('.result');
+          result.textContent = '';
+          result.classList.remove('correct');
+          result.classList.remove('incorrect');
+        },
+
+        onSubmit(event) {
+          event.preventDefault();
+          let questionElements = document.querySelectorAll('.question');
+          Array.from(questionElements).forEach(questionElement => {
+            let checkedRadio = this.getCheckedRadio(questionElement);
+            let answer = answerKey[questionElement.id];
+            if (checkedRadio) {
+              let userAnswer = checkedRadio.parentNode.textContent;
+              if (answer === userAnswer) {
+                this.setCorrectAnswer(questionElement);
+              } else {
+                let message = `Wrong answer. The correct answer is: "${answer}"`;
+                this.setIncorrectAnswer(questionElement, message);
+              }
+            } else {
+              let message = `You did not answer this question. Correct answer is: "${answer}"`;
+              this.setIncorrectAnswer(questionElement, message);
+            }
+            
+          });
+          submitBtn.disabled = true;
+          
+          submitBtn.classList.add('inactive');
+          resetBtn.classList.add('active');
+        },
+
+        onReset(event) {
+          event.preventDefault();
+          let questionElements = document.querySelectorAll('.question');
+          Array.from(questionElements).forEach(questionElement => {
+            this.hideResult(questionElement);
+            let checkedRadio = this.getCheckedRadio(questionElement);
+            if (checkedRadio) {
+              checkedRadio.checked = false;
+            }
+          });
+          submitBtn.disabled = false;
+
+          submitBtn.classList.remove('inactive');
+          resetBtn.classList.remove('active');
+        },
+
+
+        init: function() {
+          this.renderQuestions();
+          form.addEventListener('submit', this.onSubmit.bind(this));
+          resetBtn.addEventListener('click', this.onReset.bind(this));
+        }
+      };
+
+      app.init();
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<html>
+  <body>
+    <h2>No news!</h2>
+    <div class="front-page">
+      <p><a href="/archives">News Archives</a></p>
+    </div>
+  </body>
+  <script>
+    function rewrite() {
+      let frontPageDiv = document.querySelector('.front-page');
+      let archivesP = document.querySelector('p');
+      let h2 = document.querySelector('h2');
+      h2.remove();
+
+      let h1 = document.createElement('h1');
+      h1.textContent = "The Day's News";
+      document.body.insertBefore(h1, frontPageDiv);
+
+      let article = document.createElement('article');
+      article.className = "breaking";
+      frontPageDiv.insertBefore(article, archivesP);
+
+      let title = document.createElement('p');
+      title.textContent = "Fire breaks out at the old factory";
+      article.appendChild(title);
+
+      let readMoreP = archivesP.cloneNode(true);
+      let readMoreAnchor = readMoreP.querySelector('a');
+      readMoreAnchor.setAttribute('href', "/stories/15");
+      readMoreAnchor.textContent = "Read More";
+      article.appendChild(readMoreP);
+    }
+    rewrite();
+
+    function helloLater(n) {
+      setTimeout(() => {console.log("Hello, world!")}, n * 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      let liElements = document.querySelectorAll('li');
+      console.log(liElements.length);
+    });
+    document.addEventListener('click', event => {
+      if (event.target.tagName === 'A') {
+        event.preventDefault();
+      }
+    });
+    let data = {title: 'Buy Milk', completed: true};
+    let json = JSON.stringify(data);
+    let xhr = new XMLHttpRequest();
+    xhr.open('PUT', 'http://my-todo-app.com/todos/15');
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.addEventListener('load', event => {
+      console.log(xhr.response);
+    });
+    xhr.send(json);
+    
+
+  </script>
+</html>
+
+<html>
+  <body>
+    <h1>The Day's News</h1>
+    <div class="front-page">
+      <article class="breaking">
+        <p>Fire breaks out at the old factory</p>
+        <p><a href="/stories/15">Read More</a></p>
+      </article>
+      <p><a href="/archives">News Archives</a></p>
+    </div>
+  </body>
+</html>

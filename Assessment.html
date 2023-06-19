@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+  <title>Document</title>
+</head>
+<body>
+  <!-- <main>
+    <h1>Hi</h1>
+    <ul>
+      <li>List</li>
+    </ul>
+  </main>
+  <form>
+    <p>
+      <label>
+        <input name="bagels" type="checkbox" checked>
+        <span>Bagels</span>
+       </label>
+    </p>
+    <p>
+      <label>
+        <input name="turnips" type="checkbox">
+        <span>Turnips</span>
+      </label>
+    </p>
+      <p>
+      <label>
+        <input name="cumin" type="checkbox">
+        <span>Cumin</span>
+      </label>
+    </p>
+    <p>
+      <label>
+        <input name="orange_juice" type="checkbox" checked>
+        <span>Orange Juice</span>
+      </label>
+    </p>
+  </form> -->
+  <ul>
+    <li>Fruit</li>
+    <li>Vegetables
+      <ul>
+        <li>Root
+          <ul>
+            <li>Potatoes</li>
+            <li>Carrots
+              <ul>
+                <li>Danvers</li>
+                <li>Chantenay</li>
+              </ul>
+            </li>
+            <li>Herbs
+              <ul>
+                <li>Cilantro</li>
+                <li>Parsley</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>Lettuce</li>
+      </ul>
+    </li>
+  </ul>
+  <script>
+    // function findItems() {
+    //   let checked = [];
+    //   let unchecked = [];
+    //   Array.from(document.querySelectorAll('input[type=checkbox]')).forEach(element => {
+    //     let name = element.nextElementSibling.textContent.trim();
+    //     if (element.checked) {
+    //       checked.push(name);
+    //     } else {
+    //       unchecked.push(name);
+    //     }
+    //   });
+    //   return [checked, unchecked];
+    // }
+    // console.log(findItems());
+
+
+    
+    function walkList() {
+      function walk(node, callback) {
+        callback(node);
+        let children = Array.from(node.children);
+        children.forEach(child => walk(child, callback));
+      }
+      function callback(node) {
+        if (node.tagName === 'LI') {
+          let text = node.childNodes[0].textContent.trim();
+          console.log(text);
+        }
+      }
+      walk(document.querySelector('ul'), callback);
+    }
+    walkList();
+  </script>
+</body>
+</html>
